@@ -1,0 +1,23 @@
+{
+  "name": "hubot-statuspage-notify",
+  "version": "0.0.1",
+  "description": "Hubot plugin to report StatusPage incidents/updates/outages.",
+  "main": "src/statuspage-notify.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/xurizaemon/hubot-statuspage-notify.git"
+  },
+  "keywords": [
+    "hubot",
+    "statuspage"
+  ],
+  "author": "Chris Burgess <chris@giantrobot.co.nz>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xurizaemon/hubot-statuspage-notify/issues"
+  },
+  "homepage": "https://github.com/xurizaemon/hubot-statuspage-notify#readme"
+}
