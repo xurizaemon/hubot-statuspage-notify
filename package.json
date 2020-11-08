@@ -1,10 +1,12 @@
 {
   "name": "hubot-statuspage-notify",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Hubot plugin to report StatusPage incidents/updates/outages.",
   "main": "src/statuspage-notify.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "standard src/*js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "./node_modules/.bin/watch 'npm run test' lib"
   },
   "repository": {
     "type": "git",
@@ -19,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/xurizaemon/hubot-statuspage-notify/issues"
   },
-  "homepage": "https://github.com/xurizaemon/hubot-statuspage-notify#readme"
+  "homepage": "https://github.com/xurizaemon/hubot-statuspage-notify#readme",
+  "devDependencies": {
+    "standard": "^16.0.1"
+  }
 }
