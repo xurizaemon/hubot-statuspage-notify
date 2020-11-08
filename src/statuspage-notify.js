@@ -7,7 +7,7 @@
 //   HUBOT_STATUSPAGE_NOTIFY_CHANNELS - Rooms to announce status events in.
 //
 
-module.exports = (robot) {
+module.exports = (robot) => {
   const required = [
     'HUBOT_STATUSPAGE_NOTIFY_PAGES',
     'HUBOT_STATUSPAGE_NOTIFY_CHANNELS'
