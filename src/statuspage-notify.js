@@ -2,10 +2,9 @@
 //   StatusPage notifications for Hubot
 //
 // Configuration:
-//   HUBOT_STATUSPAGE_NOTIFY_PAGES - StatusCloud pages to monitor.
+//   HUBOT_STATUSPAGE_NOTIFY_PAGES - StatusCloud page slugs (eg 'catalystcloud' or 'linode') to monitor.
 //   HUBOT_STATUSPAGE_NOTIFY_INTERVAL - Seconds between checks
 //   HUBOT_STATUSPAGE_NOTIFY_CHANNELS - Rooms to announce status events in.
-//   HUBOT_STATUSPAGE_NOTIFY_IGNORE - @TODO Regex of keys / values to ignore
 //
 
 module.exports = function(robot) {
@@ -54,8 +53,11 @@ module.exports = function(robot) {
         pages.forEach((page) => {
             // robot.logger.debug(`StatusCloud check: ${page}.`)
             let pageUrl = `https://${page}.statuspage.io/api/v2/status.json`
+            let incidentsUrl = `https://${page}.statuspage.io/api/v2/incidents/unresolved.json`
             let key = `${pluginName}.results.${page}`
             let title = page
+
+            // Check and report status.
             robot.http(pageUrl).get()((err, res, body) => {
                 if (err) throw `HTTP exception at ${pageUrl}`
                 if (res.statusCode !== 200) {
@@ -63,16 +65,50 @@ module.exports = function(robot) {
                     throw `HTTP exception at ${pageUrl}`
                 }
 
-                let prevResult = robot.brain.get(`${key}.status`) || { status: { description: 'All systems operational' } }
+                let prevResult = robot.brain.get(`${key}.status`) || { page: { updated_at: '' } }
                 let curResult = JSON.parse(body)
+                // console.log(curResult, 'curResult status')
 
                 if (typeof curResult.page.name !== 'undefined') title = curResult.page.name
-                if (curResult.status.description !== prevResult.status.description) {
+                if (curResult.page.updated_at > prevResult.page.updated_at) {
+                    let message = `${title} status is ${curResult.status.description} at ${curResult.page.updated_at}`
                     notifyChannels.forEach((channel) => {
-                        robot.messageRoom(channel, `StatusPage for ${title} reports ${curResult.status.description}`)
+                        robot.messageRoom(channel, message)
                     })
                 }
                 robot.brain.set(`${key}.status`, curResult)
+            })
+
+            // Check and report incidents.
+            robot.http(incidentsUrl).get()((err, res, body) => {
+                if (err) throw `HTTP exception at ${incidentsUrl}`
+                if (res.statusCode !== 200) {
+                    robot.logger.warning(`HTTP ${res.statusCode} response from ${url}`)
+                }
+
+                let prevResult = robot.brain.get(`${key}.incident`) || { updated_at: '' }
+                curResult = JSON.parse(body)
+
+                curResult.incidents.forEach((incident) => {
+                    if (incident.updated_at > prevResult.updated_at) {
+                        let affectedComponents = incident.components.reduce((incidents, component) => {
+                            incidents.push(`- ${component.name} (${component.status})`)
+                            return incidents
+                        }, []).join('\n')
+
+                        let message = [
+                            `${title} ${incident.impact} incident: ${incident.name}`,
+                            `${affectedComponents}`,
+                            `- ${incident.shortlink}`,
+                            `${incident.incident_updates[0].body}`
+                        ].join('\n')
+
+                        notifyChannels.forEach((channel) => {
+                            robot.messageRoom(channel, message)
+                        })
+                        robot.brain.set(`${key}.incident`, incident)
+                    }
+                })
             })
         })
     }
