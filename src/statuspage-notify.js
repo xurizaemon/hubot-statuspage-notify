@@ -27,6 +27,7 @@ module.exports = (robot) => {
   checkInterval = checkInterval * 1000
 
   const init = () => {
+    robot.logger.debug(`Initialising ${pluginName}.`)
     let validConfiguration = true
 
     required.forEach((varName) => {
@@ -37,13 +38,15 @@ module.exports = (robot) => {
     })
 
     if (validConfiguration) {
-      robot.logger.debug('Setting up timers')
+      robot.logger.debug(`Creating timer for ${pluginName} each ${checkInterval}ms.`)
       monitorPages = monitorPages.split(' ')
       notifyChannels = notifyChannels.split(' ')
 
       robot.logger.debug(`Monitoring statuscloud for ${monitorPages.join(', ')} and will notify rooms ${notifyChannels.join(', ')}`)
+      robot.logger.debug(`Set brain: ${pluginName}.monitorPages = ${monitorPages.toString()}`)
       robot.brain.set(`${pluginName}.monitorPages`, monitorPages)
       robot.brain.set(`${pluginName}.notifyChannels`, notifyChannels)
+
       setInterval(checkStatusPage, checkInterval)
     }
 
@@ -80,7 +83,12 @@ module.exports = (robot) => {
     }
 
   const checkStatusPage = () => {
-    const pages = robot.brain.get(`${pluginName}.monitorPages`)
+    const pages = robot.brain.get(`${pluginName}.monitorPages`) || []
+    if (!pages.length) {
+      robot.logger.error(`No monitor pages retrieved from brain.`)
+      robot.logger.debug(`Got brain: ${pluginName}.monitorPages = ${pages.toString()}`)
+      return
+    }
     pages.forEach((page) => {
       // robot.logger.debug(`StatusCloud check: ${page}.`)
       const pageUrl = `https://${page}.statuspage.io/api/v2/status.json`
@@ -144,5 +152,9 @@ module.exports = (robot) => {
     })
   }
 
-  init()
+  // Delay init to give redis a moment to load.
+  setTimeout(() => {
+    robot.logger.debug(`Calling init for ${pluginName}`)
+    init()
+  }, checkInterval)
 }
