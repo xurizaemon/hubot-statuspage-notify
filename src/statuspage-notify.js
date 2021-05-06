@@ -51,41 +51,39 @@ module.exports = (robot) => {
     }
 
     robot.respond(/statuspage monitor ([a-zA-Z0-9-_]+)/i, (res) => {
-        let page = res.match[1].toLowerCase()
-        robot.logger.debug(`Request to start monitoring ${page}`)
-        let monitorPages = robot.brain.get(`${pluginName}.monitorPages`)
-        var index = monitorPages.indexOf(page);
-        if (index === -1) {
-          monitorPages.push(page)
-          robot.brain.set(`${pluginName}.monitorPages`, monitorPages)
-          robot.logger.debug(`Monitoring: ${monitorPages.join(', ')}.`)
-          res.reply(`Now monitoring: ${monitorPages.join(', ')}.`)
-        }
-        else {
-          res.reply(`Already monitoring ${page}.`)
-        }
-      })
+      const page = res.match[1].toLowerCase()
+      robot.logger.debug(`Request to start monitoring ${page}`)
+      const monitorPages = robot.brain.get(`${pluginName}.monitorPages`)
+      const index = monitorPages.indexOf(page)
+      if (index === -1) {
+        monitorPages.push(page)
+        robot.brain.set(`${pluginName}.monitorPages`, monitorPages)
+        robot.logger.debug(`Monitoring: ${monitorPages.join(', ')}.`)
+        res.reply(`Now monitoring: ${monitorPages.join(', ')}.`)
+      } else {
+        res.reply(`Already monitoring ${page}.`)
+      }
+    })
 
-      robot.respond(/statuspage don't monitor ([a-zA-Z0-9-_]+)/i, (res) => {
-        let page = res.match[1].toLowerCase()
-        robot.logger.debug(`Request to stop monitoring ${page}`)
-        let monitorPages = robot.brain.get(`${pluginName}.monitorPages`)
-        var index = monitorPages.indexOf(page);
-        if (index !== -1) {
-          monitorPages.splice(index, 1);
-          robot.brain.set(`${pluginName}.monitorPages`, monitorPages)
-          res.reply(`Now monitoring: ${monitorPages.join(', ')}.`)
-        }
-        else {
-          res.reply(`Was not monitoring ${page}.`)
-        }
-      })
-    }
+    robot.respond(/statuspage don't monitor ([a-zA-Z0-9-_]+)/i, (res) => {
+      const page = res.match[1].toLowerCase()
+      robot.logger.debug(`Request to stop monitoring ${page}`)
+      const monitorPages = robot.brain.get(`${pluginName}.monitorPages`)
+      const index = monitorPages.indexOf(page)
+      if (index !== -1) {
+        monitorPages.splice(index, 1)
+        robot.brain.set(`${pluginName}.monitorPages`, monitorPages)
+        res.reply(`Now monitoring: ${monitorPages.join(', ')}.`)
+      } else {
+        res.reply(`Was not monitoring ${page}.`)
+      }
+    })
+  }
 
   const checkStatusPage = () => {
     const pages = robot.brain.get(`${pluginName}.monitorPages`) || []
     if (!pages.length) {
-      robot.logger.error(`No monitor pages retrieved from brain.`)
+      robot.logger.error('No monitor pages retrieved from brain.')
       robot.logger.debug(`Got brain: ${pluginName}.monitorPages = ${pages.toString()}`)
       return
     }
