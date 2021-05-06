@@ -1,6 +1,6 @@
 {
   "name": "hubot-statuspage-notify",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Hubot plugin to report StatusPage incidents/updates/outages.",
   "main": "src/statuspage-notify.js",
   "scripts": {
